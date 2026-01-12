@@ -77,7 +77,13 @@ This allows true multi-turn conversations rather than stateless replies.
 
 4*Response
 
-**LangGraph is used to implement a state machine-style agent workflow instead of a single prompt chain.**
+**Why LangGraph Was Chosen
+
+LangGraph was chosen to model the chatbot as a state-driven workflow rather than a single prompt chain. In real-world business agents, conversations are not linear — they involve routing, branching, and conditional logic (support vs sales vs onboarding). LangGraph allows defining explicit nodes such as intent detection, RAG answering, and lead qualification, connected through conditional edges. This makes the agent behavior deterministic, debuggable, and aligned with real product requirements. Compared to simple chains, LangGraph enables predictable transitions and prevents uncontrolled LLM-driven behavior.
+
+How State Is Managed
+
+State is maintained at two levels. At the API layer, FastAPI stores session data in an in-memory dictionary keyed by session_id. This preserves conversation context across requests. Inside the agent, LangGraph manages structured state through an AgentState schema that contains fields such as message history, detected intent, lead stage, and collected user details. When a message is received, the current state is passed into the graph, modified by nodes, and returned as an updated state object. During lead qualification, intent detection is bypassed to prevent routing overrides, ensuring the user remains locked into the sales funnel until completion. This combination of backend session memory and graph-level state ensures reliable multi-turn behavior..**
 
 
 ---
@@ -87,7 +93,7 @@ This allows true multi-turn conversations rather than stateless replies.
 ### 1. Clone Repository
 
 ```bash
-git clone <your-repo-url>
+git clone <>
 cd autostream-agent
 
 2. Create Virtual Environment 
