@@ -98,7 +98,8 @@ venv\Scripts\activate
 pip install -r requirements.txt
 
 4.. Run Server
-uvicorn app:app --host 127.0.0.1 --port 8000
+uvicorn app:app
+ http://127.0.0.1:8000/docs(as this a API only backend)
 
 #Addition point
 This project currently runs without any external API keys.
