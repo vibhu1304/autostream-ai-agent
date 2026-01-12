@@ -93,7 +93,7 @@ State is maintained at two levels. At the API layer, FastAPI stores session data
 ### 1. Clone Repository
 
 ```bash
-git clone <>
+git clone https://github.com/vibhu1304/autostream-ai-agent.git
 cd autostream-agent
 
 2. Create Virtual Environment 
