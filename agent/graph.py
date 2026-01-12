@@ -4,15 +4,22 @@ from langchain_core.messages import AIMessage
 from agent.state import AgentState
 from agent.intent import detect_intent
 from agent.rag import retrieve_context
-from agent.tools import mock_lead_capture
+from agent.tools import capture_lead
 
 
 # -------- Nodes -------- #
 
 def intent_node(state: AgentState):
+
+    # ❗ DO NOT CHANGE INTENT DURING LEAD
+    if state.get("lead_stage") is not None and state["lead_stage"] != "done":
+        return state
+
     user_msg = state["messages"][-1].content
     state["intent"] = detect_intent(user_msg)
     return state
+
+
 
 
 def greeting_node(state: AgentState):
@@ -32,29 +39,42 @@ def rag_node(state: AgentState):
 
 def lead_node(state: AgentState):
 
-    if state.get("name") is None:
-        state["messages"].append(AIMessage(content="Great! May I know your name?"))
+    user_msg = state["messages"][-1].content
+
+    if state.get("lead_stage") is None:
+        state["lead_stage"] = "name"
+        state["messages"].append(AIMessage(content="May I know your name?"))
         return state
 
-    if state.get("email") is None:
-        state["messages"].append(AIMessage(content="Thanks! Could you share your email address?"))
+    if state["lead_stage"] == "name":
+        state["name"] = user_msg
+        state["lead_stage"] = "email"
+        state["messages"].append(AIMessage(content="Thanks! Can you share your email address?"))
         return state
 
-    if state.get("platform") is None:
-        state["messages"].append(
-            AIMessage(content="Which platform do you create content on? (YouTube, Instagram, etc.)")
-        )
+    if state["lead_stage"] == "email":
+        state["email"] = user_msg
+        state["lead_stage"] = "platform"
+        state["messages"].append(AIMessage(content="Great! Which platform do you create content on?"))
         return state
 
-    mock_lead_capture(state["name"], state["email"], state["platform"])
-    state["messages"].append(AIMessage(content="You're all set! Our team will contact you shortly. 🚀"))
+    if state["lead_stage"] == "platform":
+        state["platform"] = user_msg
+        state["lead_stage"] = "done"
+        capture_lead(state["name"], state["email"], state["platform"])
+        state["messages"].append(AIMessage(content="Thanks! Our team will contact you shortly."))
+        return state
+
     return state
+
+
 
 
 # -------- Router -------- #
 
 def router(state: AgentState):
-    
+
+   
     if state.get("lead_stage") is not None and state["lead_stage"] != "done":
         return "lead"
 
