@@ -54,10 +54,16 @@ def lead_node(state: AgentState):
 # -------- Router -------- #
 
 def router(state: AgentState):
+    
+    if state.get("lead_stage") is not None and state["lead_stage"] != "done":
+        return "lead"
+
     if state["intent"] == "high_intent":
         return "lead"
+
     if state["intent"] == "greeting":
         return "greeting"
+
     return "rag"
 
 
